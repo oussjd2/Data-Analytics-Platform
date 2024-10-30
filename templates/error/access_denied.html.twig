@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="alert alert-danger" role="alert">
+        {{ message }}
+    </div>
+    <script>
+        // Display a notification
+        alert('{{ message }}');
+        // Optionally, you can use a more sophisticated notification library here
+    </script>
+{% endblock %}

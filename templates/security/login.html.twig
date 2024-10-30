@@ -1,0 +1,29 @@
+{% extends 'baseAuth.html.twig' %}
+
+{% block title %}Log in!{% endblock %}
+
+{% block body %}
+    <form method="post">
+        {% if error %}
+            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        {% if app.user %}
+            <div class="text-center mb-3">
+                You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
+            </div>
+        {% else %}
+            <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+            <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" class="form-control" placeholder="Email" autocomplete="email" required autofocus>
+            <input type="password" name="_password" id="inputPassword" class="form-control" placeholder="Password" autocomplete="current-password" required>
+
+            <input type="hidden" name="_csrf_token"
+                   value="{{ csrf_token('authenticate') }}"
+            >
+
+            <button class="btn btn-lg btn-primary" type="submit">
+                Sign in
+            </button>
+        {% endif %}
+    </form>
+{% endblock %}

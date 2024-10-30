@@ -1,0 +1,42 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    providers:
+        chain_provider:
+            chain:
+                providers: [app_user_provider, app_super_user_provider]
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+        app_super_user_provider:
+            entity:
+                class: App\Entity\SuperUser
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            lazy: true
+            provider: chain_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                default_target_path: app_home
+            logout:
+                path: app_logout
+                target: app_login
+
+    access_control:
+        - { path: ^/logout$, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/user/new, roles: ROLE_SUPER_USER }
+        - { path: ^/user/.+/edit, roles: ROLE_SUPER_USER }
+        - { path: ^/user/.+/delete, roles: ROLE_SUPER_USER }
+        - { path: ^/user, roles: [ROLE_ADMIN, ROLE_SUPER_USER] }
+        # Add these new lines
+        - { path: ^/leads, roles: [ROLE_ADMIN, ROLE_SUPER_USER] }
+        - { path: ^/leads/dashboard, roles: [ROLE_ADMIN, ROLE_SUPER_USER] }
+        - { path: ^/leads/custom-chart, roles: [ROLE_ADMIN, ROLE_SUPER_USER] }

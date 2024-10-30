@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Custom Chart Builder{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Custom Chart Builder</h1>
+
+        <div class="mb-3">
+            <a href="{{ path('leads_dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+
+        <form id="chartBuilderForm">
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label for="xAxis" class="form-label">X-Axis (Categories)</label>
+                    <select id="xAxis" name="xAxis" class="form-select" required>
+                        {% for key, label in availableFields %}
+                            <option value="{{ key }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="yAxis" class="form-label">Y-Axis (Values)</label>
+                    <select id="yAxis" name="yAxis" class="form-select" required>
+                        <option value="count">Count</option>
+                        {% for key, label in availableFields %}
+                            <option value="{{ key }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="chartType" class="form-label">Chart Type</label>
+                    <select id="chartType" name="chartType" class="form-select" required>
+                        {% for type in chartTypes %}
+                            <option value="{{ type }}">{{ type|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" id="startDate" name="startDate" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" id="endDate" name="endDate" class="form-control" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Generate Chart</button>
+        </form>
+
+        <div id="chartContainer" class="mt-4" style="height: 400px;">
+            <canvas id="customChart"></canvas>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('chartBuilderForm');
+            const chartContainer = document.getElementById('chartContainer');
+            let customChart = null;
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(form);
+
+                fetch('{{ path('generate_custom_chart') }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+
+                    if (customChart) {
+                        customChart.destroy();
+                    }
+
+                    const ctx = document.getElementById('customChart').getContext('2d');
+                    customChart = new Chart(ctx, {
+                        type: data.chartType,
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Custom Chart',
+                                data: data.data,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)',
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)',
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while generating the chart.');
+                });
+            });
+        });
+    </script>
+{% endblock %}

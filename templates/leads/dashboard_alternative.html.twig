@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Business Analysis Dashboard (Alternative){% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
+
+{% block body %}
+    <h1>Business Analysis Dashboard (Alternative)</h1>
+
+    <div class="mb-3">
+        <a href="{{ path('leads_dashboard') }}" class="btn btn-primary">Chart.js Dashboard</a>
+        <a href="{{ path('leads_dashboard_alternative') }}" class="btn btn-secondary">ApexCharts Dashboard</a>
+    </div>
+
+    <div class="dashboard-container">
+    {% for chartId, config in chartConfigs %}
+        <div class="chart-wrapper">
+            <h2>{{ config.title }}</h2>
+            <div id="{{ chartId }}Chart"></div>
+            <p class="chart-explanation">
+                {% if chartId == 'sourceDistribution' %}
+                    This chart shows the distribution of lead sources, helping identify the most effective channels for lead generation.
+                {% elseif chartId == 'monthlyLeads' %}
+                    Tracks lead generation over time, allowing for trend analysis and seasonal patterns identification.
+                {% elseif chartId == 'porteurPerformance' %}
+                    Highlights top-performing porteurs, enabling resource allocation optimization and best practice sharing.
+                {% elseif chartId == 'rtcPreference' %}
+                    Illustrates client preferences for RTC (Real-Time Communication), informing communication strategy decisions.
+                {% elseif chartId == 'conversionByPartner' %}
+                    Compares conversion rates across partners, identifying high-performing partnerships and areas for improvement.
+                {% elseif chartId == 'phoneCountryCode' %}
+                    Shows lead distribution by country, guiding international marketing efforts and localization strategies.
+                {% endif %}
+            </p>
+        </div>
+    {% endfor %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function createChart(elementId, type, labels, data, title) {
+                var options = {
+                    series: [{
+                        data: data
+                    }],
+                    chart: {
+                        type: type,
+                        height: 350
+                    },
+                    labels: labels,
+                    title: {
+                        text: title,
+                        align: 'center'
+                    },
+                    responsive: [{
+                        breakpoint: 480,
+                        options: {
+                            chart: {
+                                width: 200
+                            },
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }]
+                };
+
+                if (type === 'bar') {
+                    options.xaxis = {
+                        categories: labels
+                    };
+                    options.series = [{
+                        name: title,
+                        data: data
+                    }];
+                }
+
+                var chart = new ApexCharts(document.querySelector("#" + elementId), options);
+                chart.render();
+            }
+
+            {% for chartId, config in chartConfigs %}
+                createChart('{{ chartId }}Chart', '{{ config.type }}', 
+                    {{ chartData[chartId]|keys|json_encode|raw }},
+                    {% if chartId == 'conversionByPartner' %}
+                        {{ chartData[chartId]|map(p => p.rate)|json_encode|raw }}
+                    {% else %}
+                        [{% for value in chartData[chartId] %}{{ value }}{% if not loop.last %},{% endif %}{% endfor %}]
+                    {% endif %},
+                    '{{ config.title }}'
+                );
+            {% endfor %}
+        });
+    </script>
+{% endblock %}

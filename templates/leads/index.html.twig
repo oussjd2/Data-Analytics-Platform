@@ -1,0 +1,135 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Leads Management{% endblock %}
+
+{% block body %}
+    <h1>Leads</h1>
+
+    <div class="filters">
+        <label for="partnerFilter">Partner:</label>
+        <select id="partnerFilter"><option value="">All</option></select>
+
+        <label for="porteurFilter">Porteur:</label>
+        <select id="porteurFilter"><option value="">All</option></select>
+
+        <label for="monthFilter">Month:</label>
+        <select id="monthFilter"><option value="">All</option></select>
+    </div>
+
+    <table id="leadsTable" class="display">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Porteur</th>
+            <th>Firstname</th>
+            <th>Birthday</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Question</th>
+            <th>Title</th>
+            <th>Country</th>
+            <th>IP</th>
+            <th>Partner</th>
+            <th>Raison</th>
+            <th>Source</th>
+            <th>Campaign</th>
+            <th>RTC</th>
+            <th>Audio</th>
+            <th>Subid</th>
+            <th>Form</th>
+            <th>Cardlist</th>
+            <th>Reponse AI</th>
+            <th>Created At</th>
+            <th>Exported</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for lead in leads %}
+            <tr>
+                <td>{{ lead.id }}</td>
+                <td>{{ lead.porteur }}</td>
+                <td>{{ lead.firstname }}</td>
+                <td>{{ lead.birthday|date('Y-m-d') }}</td>
+                <td>{{ lead.phone }}</td>
+                <td>{{ lead.email }}</td>
+                <td>{{ lead.question }}</td>
+                <td>{{ lead.title }}</td>
+                <td>{{ lead.country }}</td>
+                <td>{{ lead.ip }}</td>
+                <td>{{ lead.partner }}</td>
+                <td>{{ lead.raison }}</td>
+                <td>{{ lead.source }}</td>
+                <td>{{ lead.campaign }}</td>
+                <td>{{ lead.rtc }}</td>
+                <td>{{ lead.audio }}</td>
+                <td>{{ lead.subid }}</td>
+                <td>{{ lead.form }}</td>
+                <td>{{ lead.cardlist }}</td>
+                <td>{{ lead.reponseAi }}</td>
+                <td>{{ lead.createdAt|date('Y-m-d H:i:s') }}</td>
+                <td>{{ lead.exported ? 'Yes' : 'No' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Add this button after the table -->
+    <div class="mt-3">
+        <a href="{{ path('leads_dashboard') }}" class="btn btn-primary">View Charts</a>
+    </div>
+
+    <!-- Include DataTables script -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var table = $('#leadsTable').DataTable({
+                scrollX: true
+            });
+
+            // Populate filters
+            table.columns([1, 10, 20]).every(function (index) {
+                var column = this;
+                var select = index === 1 ? $('#porteurFilter') : 
+                             index === 10 ? $('#partnerFilter') : 
+                             $('#monthFilter');
+
+                if (index === 20) {
+                    // For month filter
+                    var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                    months.forEach(function(month, i) {
+                        select.append('<option value="' + (i + 1) + '">' + month + '</option>');
+                    });
+                } else {
+                    column.data().unique().sort().each(function (d, j) {
+                        select.append('<option value="' + d + '">' + d + '</option>')
+                    });
+                }
+            });
+
+            // Apply filters
+            $('.filters select').on('change', function () {
+                var columnIndex = $(this).attr('id') === 'porteurFilter' ? 1 : 
+                                  $(this).attr('id') === 'partnerFilter' ? 10 : 20;
+                var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                
+                if (columnIndex === 20) {
+                    // Custom filtering for month
+                    $.fn.dataTable.ext.search.push(
+                        function(settings, data, dataIndex) {
+                            if (val === '') return true;
+                            var date = new Date(data[20]);
+                            return date.getMonth() + 1 === parseInt(val);
+                        }
+                    );
+                    table.draw();
+                    $.fn.dataTable.ext.search.pop(); // Remove the custom filter after drawing
+                } else {
+                    table.column(columnIndex).search(val ? '^' + val + '$' : '', true, false).draw();
+                }
+            });
+        });
+    </script>
+
+{% endblock %}

@@ -1,0 +1,21 @@
+controllers:
+    resource: ../src/Controller/
+    type: attribute
+
+leads_dashboard:
+    path: /leads/dashboard
+    controller: App\Controller\LeadsController::dashboard
+
+analyze_chart:
+    path: /leads/analyze-chart
+    controller: App\Controller\LeadsController::analyzeChart
+    methods: [POST]
+
+leads_custom_chart:
+    path: /leads/custom-chart
+    controller: App\Controller\LeadsController::customChart
+
+generate_custom_chart:
+    path: /leads/generate-custom-chart
+    controller: App\Controller\LeadsController::generateCustomChart
+    methods: [POST]
