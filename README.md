@@ -1,14 +1,14 @@
-# Data-Analytics-Platform
+# Data Analytics Platform
 
 Symfony application for lead management and analytics. The platform combines CRUD views, dashboards, role-based access control, seeded data, and OpenAI-assisted chart analysis for internal business users.
 
-## What It Does
+## Features
 
-- Displays and filters lead data
-- Renders dashboard charts for campaign and source performance
-- Restricts analytics features to elevated roles
-- Uses OpenAI to generate narrative analysis from chart data
-- Includes fixtures for local demo data
+- Lead listing, filtering, creation, and update flows
+- Dashboard charts for campaign and source performance
+- Role-based access checks for analytics features
+- OpenAI-backed narrative analysis from chart data
+- Fixtures for local demo data
 
 ## Tech Stack
 
@@ -51,7 +51,14 @@ OPENAI_API_KEY="replace-with-your-openai-api-key"
 APP_ENV=dev
 ```
 
-### 3. Start the app
+### 3. Prepare the database
+
+```bash
+php bin/console doctrine:migrations:migrate
+php bin/console doctrine:fixtures:load
+```
+
+### 4. Start the app
 
 ```bash
 symfony server:start
@@ -63,26 +70,13 @@ or with Docker:
 docker compose up --build
 ```
 
-## Key Features
-
-- lead dashboard with multiple chart views
-- date-range filtering
-- role-based access checks
-- OpenAI-backed chart interpretation
-- fixtures for local setup
-
-## Current Status
-
-This is the strongest business-oriented repository in the portfolio. It already shows real domain thinking, but it still needs:
-
-- installation screenshots or a short demo GIF
-- tests around analytics and security flows
-- clearer setup instructions for database schema and fixtures
-- a production-safe OpenAI integration layer
-
-## Suggested Next Improvements
+## Useful Commands
 
 ```bash
-php bin/console doctrine:migrations:migrate
-php bin/console doctrine:fixtures:load
+php bin/console cache:clear
+php bin/phpunit
 ```
+
+## AI Configuration
+
+Chart analysis uses `OPENAI_API_KEY` from the local environment. Do not commit `.env.local` or API credentials.
